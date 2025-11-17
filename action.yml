@@ -308,11 +308,41 @@ runs:
           echo "This is the problem - update your GitHub secret with the exact value!"
         fi
         
+        # Check for interfering environment variables
+        echo ""
+        echo "🔍 Checking AWS environment..."
+        env | grep -i aws || true
+        
         # Test credentials and permissions
+        echo ""
         echo "🔐 Testing AWS credentials..."
-        if ! aws sts get-caller-identity --region "$AWS_REGION"; then
-          echo "❌ Failed to authenticate with AWS"
-          exit 1
+        echo "Using region: $AWS_REGION"
+        
+        # Try with explicit credentials and debug mode
+        AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY_ID" \
+        AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY" \
+        AWS_REGION="$AWS_REGION" \
+        aws sts get-caller-identity --region "$AWS_REGION" --debug 2>&1 | head -50
+        
+        EXIT_CODE=${PIPESTATUS[0]}
+        if [ $EXIT_CODE -ne 0 ]; then
+          echo ""
+          echo "❌ Failed to authenticate with AWS (exit code: $EXIT_CODE)"
+          echo ""
+          echo "Trying alternative authentication method..."
+          # Try using aws configure to set credentials
+          aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID"
+          aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY"
+          aws configure set region "$AWS_REGION"
+          
+          if aws sts get-caller-identity; then
+            echo "✅ Authentication successful with aws configure method"
+          else
+            echo "❌ Authentication failed with both methods"
+            exit 1
+          fi
+        else
+          echo "✅ AWS credentials validated successfully"
         fi
         
         echo "🔍 Testing S3 bucket access..."
