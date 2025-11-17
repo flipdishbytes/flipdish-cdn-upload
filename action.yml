@@ -276,12 +276,30 @@ runs:
         
         # Show what we expect
         echo ""
-        echo "Expected: AKIASFUIRYFS6MGLYQ5H"
-        echo "Received: $AWS_ACCESS_KEY_ID"
+        echo "Expected Access Key ID: AKIASFUIRYFS6MGLYQ5H"
+        echo "Received Access Key ID: $AWS_ACCESS_KEY_ID"
         if [[ "$AWS_ACCESS_KEY_ID" == "AKIASFUIRYFS6MGLYQ5H" ]]; then
           echo "✅ Access Key ID matches expected value"
         else
           echo "❌ Access Key ID does NOT match - update your GitHub secret!"
+        fi
+        
+        # Check Secret Access Key (show first/last 4 chars for verification)
+        echo ""
+        echo "Secret Key verification:"
+        echo "Expected length: 40"
+        echo "Received length: ${#AWS_SECRET_ACCESS_KEY}"
+        echo "First 4 chars: ${AWS_SECRET_ACCESS_KEY:0:4}"
+        echo "Last 4 chars: ${AWS_SECRET_ACCESS_KEY: -4}"
+        echo ""
+        echo "Expected first 4: NCST"
+        echo "Expected last 4: XG+W"
+        
+        if [[ "${AWS_SECRET_ACCESS_KEY:0:4}" == "NCST" && "${AWS_SECRET_ACCESS_KEY: -4}" == "XG+W" && "${#AWS_SECRET_ACCESS_KEY}" == "40" ]]; then
+          echo "✅ Secret Access Key appears correct"
+        else
+          echo "❌ Secret Access Key does NOT match - this is the problem!"
+          echo "   Update your GitHub secret 'aws-secret-access-key' with the correct value"
         fi
         
         # Test credentials and permissions
