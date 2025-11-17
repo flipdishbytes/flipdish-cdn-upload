@@ -284,22 +284,28 @@ runs:
           echo "❌ Access Key ID does NOT match - update your GitHub secret!"
         fi
         
-        # Check Secret Access Key (show first/last 4 chars for verification)
+        # Check Secret Access Key - compare the full value
         echo ""
         echo "Secret Key verification:"
-        echo "Expected length: 40"
+        EXPECTED_SECRET="NCSTPN9aXHoeKLEAkAmAN9OkaqgUzRQyuksEXG+W"
+        echo "Expected length: ${#EXPECTED_SECRET}"
         echo "Received length: ${#AWS_SECRET_ACCESS_KEY}"
-        echo "First 4 chars: ${AWS_SECRET_ACCESS_KEY:0:4}"
-        echo "Last 4 chars: ${AWS_SECRET_ACCESS_KEY: -4}"
-        echo ""
-        echo "Expected first 4: NCST"
-        echo "Expected last 4: XG+W"
         
-        if [[ "${AWS_SECRET_ACCESS_KEY:0:4}" == "NCST" && "${AWS_SECRET_ACCESS_KEY: -4}" == "XG+W" && "${#AWS_SECRET_ACCESS_KEY}" == "40" ]]; then
-          echo "✅ Secret Access Key appears correct"
+        if [[ "$AWS_SECRET_ACCESS_KEY" == "$EXPECTED_SECRET" ]]; then
+          echo "✅ Secret Access Key EXACTLY matches expected value"
         else
-          echo "❌ Secret Access Key does NOT match - this is the problem!"
-          echo "   Update your GitHub secret 'aws-secret-access-key' with the correct value"
+          echo "❌ Secret Access Key does NOT match exactly!"
+          echo ""
+          echo "Character-by-character comparison:"
+          for i in {0..39}; do
+            expected_char="${EXPECTED_SECRET:$i:1}"
+            received_char="${AWS_SECRET_ACCESS_KEY:$i:1}"
+            if [[ "$expected_char" != "$received_char" ]]; then
+              echo "  Position $i: expected '$expected_char' but got '$received_char'"
+            fi
+          done
+          echo ""
+          echo "This is the problem - update your GitHub secret with the exact value!"
         fi
         
         # Test credentials and permissions
