@@ -264,8 +264,25 @@ runs:
         export AWS_SECRET_ACCESS_KEY=$(echo -n "$AWS_SECRET_ACCESS_KEY" | tr -d '[:space:]')
         
         echo "🔍 Credential validation..."
+        echo "Access Key ID: $AWS_ACCESS_KEY_ID"
         echo "Access Key ID length: ${#AWS_ACCESS_KEY_ID}"
         echo "Secret Key length: ${#AWS_SECRET_ACCESS_KEY}"
+        
+        # Validate format
+        if [[ "${AWS_ACCESS_KEY_ID:0:4}" != "AKIA" && "${AWS_ACCESS_KEY_ID:0:4}" != "ASIA" ]]; then
+          echo "❌ ERROR: Access Key ID doesn't start with AKIA or ASIA - invalid format!"
+          echo "   Make sure your GitHub secret contains a valid AWS Access Key ID"
+        fi
+        
+        # Show what we expect
+        echo ""
+        echo "Expected: AKIASFUIRYFS6MGLYQ5H"
+        echo "Received: $AWS_ACCESS_KEY_ID"
+        if [[ "$AWS_ACCESS_KEY_ID" == "AKIASFUIRYFS6MGLYQ5H" ]]; then
+          echo "✅ Access Key ID matches expected value"
+        else
+          echo "❌ Access Key ID does NOT match - update your GitHub secret!"
+        fi
         
         # Test credentials and permissions
         echo "🔐 Testing AWS credentials..."
