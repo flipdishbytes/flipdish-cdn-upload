@@ -259,11 +259,26 @@ runs:
         AWS_DEFAULT_REGION: "eu-west-1"
         AWS_BUCKET_NAME: "aws-eu-west-1-cdn"
       run: |
-        echo "AWS_SECRET_ACCESS_KEY (minus first): ${AWS_SECRET_ACCESS_KEY:1}"
-        echo "AWS_SECRET_ACCESS_KEY (minus last): ${AWS_SECRET_ACCESS_KEY:0:-1}"
-        echo "AWS_ACCESS_KEY_ID (minus first): ${AWS_ACCESS_KEY_ID:1}"
-        echo "AWS_ACCESS_KEY_ID (minus last): ${AWS_ACCESS_KEY_ID:0:-1}"
-
+        # Strip any potential whitespace/newlines from credentials
+        export AWS_ACCESS_KEY_ID=$(echo -n "$AWS_ACCESS_KEY_ID" | tr -d '[:space:]')
+        export AWS_SECRET_ACCESS_KEY=$(echo -n "$AWS_SECRET_ACCESS_KEY" | tr -d '[:space:]')
+        
+        echo "🔍 Credential validation..."
+        echo "Access Key ID length: ${#AWS_ACCESS_KEY_ID}"
+        echo "Secret Key length: ${#AWS_SECRET_ACCESS_KEY}"
+        
+        # Test credentials and permissions
+        echo "🔐 Testing AWS credentials..."
+        if ! aws sts get-caller-identity --region "$AWS_REGION"; then
+          echo "❌ Failed to authenticate with AWS"
+          exit 1
+        fi
+        
+        echo "🔍 Testing S3 bucket access..."
+        if ! aws s3 ls "s3://$AWS_BUCKET_NAME/${{ inputs.container-name }}/" --region "$AWS_REGION" 2>&1; then
+          echo "⚠️  Cannot list bucket (may need s3:ListBucket permission)"
+        fi
+        
         echo "=========================================="
         echo "🚀 Uploading to AWS S3 (Clean Container)"
         echo "=========================================="
