@@ -1,107 +1,115 @@
-name: 'Upload to Flipdish CDN'
-description: 'Upload files to both Azure Blob Storage and AWS S3 CDN containers'
-author: 'Flipdish'
+name: "Upload to Flipdish CDN"
+description: "Upload files to both Azure Blob Storage and AWS S3 CDN containers"
+author: "Flipdish"
 
 branding:
-  icon: 'upload-cloud'
-  color: 'blue'
+  icon: "upload-cloud"
+  color: "blue"
 
 inputs:
   container-name:
-    description: 'Name of the CDN container (e.g., fonts, icons, menus)'
+    description: "Name of the CDN container (e.g., fonts, icons, menus)"
     required: true
   source-directory:
-    description: 'Local directory path containing files to upload'
+    description: "Local directory path containing files to upload"
     required: true
   azure-connection-string:
-    description: 'Azure Storage connection string'
+    description: "Azure Storage connection string"
     required: true
   aws-access-key-id:
-    description: 'AWS Access Key ID'
+    description: "AWS Access Key ID"
     required: true
   aws-secret-access-key:
-    description: 'AWS Secret Access Key'
+    description: "AWS Secret Access Key"
     required: true
   dry-run:
-    description: 'Perform a dry run without actually uploading'
+    description: "Perform a dry run without actually uploading"
     required: false
-    default: 'false'
+    default: "false"
   clean-container:
-    description: 'Delete all files in container before uploading (clean slate)'
+    description: "Delete all files in container before uploading (clean slate)"
     required: false
-    default: 'false'
+    default: "false"
   purge-cdn:
-    description: 'Purge CDN cache for the uploaded container path after upload'
+    description: "Purge CDN cache for the uploaded container path after upload"
     required: false
-    default: 'false'
+    default: "false"
   azure-frontdoor-client-id:
-    description: 'Azure service principal client ID for Front Door purge (required if purge-cdn is true)'
+    description: "Azure service principal client ID for Front Door purge (required if purge-cdn is true)"
     required: false
-    default: ''
+    default: ""
   azure-frontdoor-client-secret:
-    description: 'Azure service principal client secret for Front Door purge (required if purge-cdn is true)'
+    description: "Azure service principal client secret for Front Door purge (required if purge-cdn is true)"
     required: false
-    default: ''
+    default: ""
   azure-frontdoor-tenant-id:
-    description: 'Azure tenant ID for Front Door purge (required if purge-cdn is true)'
+    description: "Azure tenant ID for Front Door purge (required if purge-cdn is true)"
     required: false
-    default: ''
+    default: ""
   azure-frontdoor-subscription-id:
-    description: 'Azure subscription ID for Front Door purge (required if purge-cdn is true)'
+    description: "Azure subscription ID for Front Door purge (required if purge-cdn is true)"
     required: false
-    default: ''
+    default: ""
   azure-frontdoor-profile-name:
-    description: 'Azure Front Door profile name (required if purge-cdn is true)'
+    description: "Azure Front Door profile name (required if purge-cdn is true)"
     required: false
-    default: ''
+    default: ""
   azure-frontdoor-endpoint-name:
-    description: 'Azure Front Door endpoint name (required if purge-cdn is true)'
+    description: "Azure Front Door endpoint name (required if purge-cdn is true)"
     required: false
-    default: ''
+    default: ""
   azure-resource-group:
-    description: 'Azure resource group containing Front Door (required if purge-cdn is true)'
+    description: "Azure resource group containing Front Door (required if purge-cdn is true)"
     required: false
-    default: ''
+    default: ""
   aws-cloudfront-distribution-id:
-    description: 'AWS CloudFront distribution ID (required if purge-cdn is true)'
+    description: "AWS CloudFront distribution ID (required if purge-cdn is true)"
     required: false
-    default: ''
+    default: ""
   aws-cloudfront-invalidation-key-id:
-    description: 'AWS Access Key ID for CloudFront invalidation (required if purge-cdn is true)'
+    description: "AWS Access Key ID for CloudFront invalidation (required if purge-cdn is true)"
     required: false
-    default: ''
+    default: ""
   aws-cloudfront-invalidation-secret-key:
-    description: 'AWS Secret Access Key for CloudFront invalidation (required if purge-cdn is true)'
+    description: "AWS Secret Access Key for CloudFront invalidation (required if purge-cdn is true)"
     required: false
-    default: ''
+    default: ""
+  cloudflare-zone-id:
+    description: "Cloudflare Zone ID (required if purge-cdn is true)"
+    required: false
+    default: ""
+  cloudflare-api-token:
+    description: "Cloudflare API Token with cache purge permissions (required if purge-cdn is true)"
+    required: false
+    default: ""
 
 outputs:
   azure-files-uploaded:
-    description: 'Number of files uploaded to Azure'
+    description: "Number of files uploaded to Azure"
     value: ${{ steps.azure-upload.outputs.files-uploaded || steps.azure-upload-clean.outputs.files-uploaded }}
   aws-files-uploaded:
-    description: 'Number of files uploaded to AWS'
+    description: "Number of files uploaded to AWS"
     value: ${{ steps.aws-upload.outputs.files-uploaded || steps.aws-upload-clean.outputs.files-uploaded }}
   azure-url:
-    description: 'Azure CDN URL for the container'
+    description: "Azure CDN URL for the container"
     value: ${{ steps.azure-upload.outputs.cdn-url || steps.azure-upload-clean.outputs.cdn-url }}
   aws-url:
-    description: 'AWS CDN URL for the container'
+    description: "AWS CDN URL for the container"
     value: ${{ steps.aws-upload.outputs.cdn-url || steps.aws-upload-clean.outputs.cdn-url }}
 
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
     - name: Validate inputs
       shell: bash
       run: |
         echo "🔍 Validating inputs..."
-        
+
         if [ ! -d "${{ inputs.source-directory }}" ]; then
           echo "❌ Error: Source directory does not exist: ${{ inputs.source-directory }}"
           exit 1
         fi
-        
+
         FILE_COUNT=$(find "${{ inputs.source-directory }}" -type f | wc -l)
         echo "📁 Source directory: ${{ inputs.source-directory }}"
         echo "📊 Files to upload: $FILE_COUNT"
@@ -144,7 +152,7 @@ runs:
         echo "☁️  Uploading to Azure Blob Storage (Clean Container)"
         echo "=========================================="
         echo "Container: ${{ inputs.container-name }}"
-        
+
         # Upload files first (overwrite existing files)
         echo "📤 Uploading files to container (overwriting existing)..."
         az storage blob upload-batch \
@@ -154,16 +162,16 @@ runs:
           --overwrite true \
           --output json \
           | tee azure-upload-result.json
-        
+
         # Count uploaded files
         FILES_UPLOADED=$(find "${{ inputs.source-directory }}" -type f | wc -l)
-        
+
         # Get list of source files (relative paths from source directory)
         echo "📋 Building list of source files..."
         cd "${{ inputs.source-directory }}"
         find . -type f | sed 's|^\./||' | sort > /tmp/source-files.txt
         cd - > /dev/null
-        
+
         # Get list of blobs in container
         echo "📋 Getting list of existing blobs in container..."
         az storage blob list \
@@ -171,11 +179,11 @@ runs:
           --container-name "${{ inputs.container-name }}" \
           --query "[].name" \
           --output tsv | sort > /tmp/container-files.txt || touch /tmp/container-files.txt
-        
+
         # Find files to delete (in container but not in source)
         echo "🗑️  Identifying orphaned files to delete..."
         comm -13 /tmp/source-files.txt /tmp/container-files.txt > /tmp/files-to-delete.txt
-        
+
         ORPHANED_COUNT=$(wc -l < /tmp/files-to-delete.txt)
         if [ "$ORPHANED_COUNT" -gt 0 ]; then
           echo "🗑️  Deleting $ORPHANED_COUNT orphaned files..."
@@ -191,16 +199,16 @@ runs:
         else
           echo "✅ No orphaned files to delete"
         fi
-        
+
         # Cleanup temp files
         rm -f /tmp/source-files.txt /tmp/container-files.txt /tmp/files-to-delete.txt
-        
+
         # Extract storage account name from connection string for URL
         STORAGE_ACCOUNT=$(echo "$AZURE_STORAGE_CONNECTION_STRING" | grep -oP 'AccountName=\K[^;]+')
-        
+
         echo "files-uploaded=$FILES_UPLOADED" >> $GITHUB_OUTPUT
         echo "cdn-url=https://$STORAGE_ACCOUNT.blob.core.windows.net/${{ inputs.container-name }}" >> $GITHUB_OUTPUT
-        
+
         echo "✅ Azure upload complete: $FILES_UPLOADED files uploaded"
         echo ""
 
@@ -215,13 +223,13 @@ runs:
         echo "☁️  Uploading to Azure Blob Storage"
         echo "=========================================="
         echo "Container: ${{ inputs.container-name }}"
-        
+
         DRY_RUN_FLAG=""
         if [ "${{ inputs.dry-run }}" == "true" ]; then
           echo "⚠️  DRY RUN MODE - No files will be uploaded"
           DRY_RUN_FLAG="--dryrun"
         fi
-        
+
         # Upload files using Azure CLI with connection string
         az storage blob upload-batch \
           --connection-string "$AZURE_STORAGE_CONNECTION_STRING" \
@@ -231,20 +239,20 @@ runs:
           --output json \
           $DRY_RUN_FLAG \
           | tee azure-upload-result.json
-        
+
         # Count uploaded files
         if [ "${{ inputs.dry-run }}" != "true" ]; then
           FILES_UPLOADED=$(find "${{ inputs.source-directory }}" -type f | wc -l)
         else
           FILES_UPLOADED=0
         fi
-        
+
         # Extract storage account name from connection string for URL
         STORAGE_ACCOUNT=$(echo "$AZURE_STORAGE_CONNECTION_STRING" | grep -oP 'AccountName=\K[^;]+')
-        
+
         echo "files-uploaded=$FILES_UPLOADED" >> $GITHUB_OUTPUT
         echo "cdn-url=https://$STORAGE_ACCOUNT.blob.core.windows.net/${{ inputs.container-name }}" >> $GITHUB_OUTPUT
-        
+
         echo "✅ Azure upload complete: $FILES_UPLOADED files"
         echo ""
 
@@ -263,7 +271,7 @@ runs:
         # Session tokens are for temporary credentials only (STS/AssumeRole)
         # Using a session token with permanent IAM credentials causes InvalidClientTokenId
         unset AWS_SESSION_TOKEN
-        
+
         # Verify credentials work
         echo "🔐 Verifying AWS credentials..."
         if ! aws sts get-caller-identity --region "$AWS_REGION" > /dev/null 2>&1; then
@@ -274,14 +282,14 @@ runs:
           exit 1
         fi
         echo "✅ AWS credentials verified"
-        
+
         echo "=========================================="
         echo "🚀 Uploading to AWS S3 (Clean Container)"
         echo "=========================================="
         echo "Bucket: $AWS_BUCKET_NAME (managed by CDN repo)"
         echo "Container: ${{ inputs.container-name }}"
         echo "Region: $AWS_REGION"
-        
+
         # Upload files and delete orphaned files in one operation
         # The --delete flag removes files from destination that don't exist in source
         echo "📤 Uploading files to container and cleaning up orphaned files..."
@@ -290,13 +298,13 @@ runs:
           "s3://$AWS_BUCKET_NAME/${{ inputs.container-name }}" \
           --region "$AWS_REGION" \
           --delete
-        
+
         # Count uploaded files
         FILES_UPLOADED=$(find "${{ inputs.source-directory }}" -type f | wc -l)
-        
+
         echo "files-uploaded=$FILES_UPLOADED" >> $GITHUB_OUTPUT
         echo "cdn-url=https://$AWS_BUCKET_NAME.s3.$AWS_REGION.amazonaws.com/${{ inputs.container-name }}" >> $GITHUB_OUTPUT
-        
+
         echo "✅ AWS upload complete: $FILES_UPLOADED files uploaded, orphaned files removed"
         echo ""
 
@@ -315,20 +323,20 @@ runs:
         # Session tokens are for temporary credentials only (STS/AssumeRole)
         # Using a session token with permanent IAM credentials causes InvalidClientTokenId
         unset AWS_SESSION_TOKEN
-        
+
         echo "=========================================="
         echo "🚀 Uploading to AWS S3"
         echo "=========================================="
         echo "Bucket: $AWS_BUCKET_NAME (managed by CDN repo)"
         echo "Container: ${{ inputs.container-name }}"
         echo "Region: $AWS_REGION"
-        
+
         DRY_RUN_FLAG=""
         if [ "${{ inputs.dry-run }}" == "true" ]; then
           echo "⚠️  DRY RUN MODE - No files will be uploaded"
           DRY_RUN_FLAG="--dryrun"
         fi
-        
+
         # Upload files using AWS CLI (uses container name as prefix)
         # Note: Bucket uses bucket policy for public access (ACLs disabled)
         aws s3 sync \
@@ -336,17 +344,17 @@ runs:
           "s3://$AWS_BUCKET_NAME/${{ inputs.container-name }}" \
           --region "$AWS_REGION" \
           $DRY_RUN_FLAG
-        
+
         # Count uploaded files
         if [ "${{ inputs.dry-run }}" != "true" ]; then
           FILES_UPLOADED=$(find "${{ inputs.source-directory }}" -type f | wc -l)
         else
           FILES_UPLOADED=0
         fi
-        
+
         echo "files-uploaded=$FILES_UPLOADED" >> $GITHUB_OUTPUT
         echo "cdn-url=https://$AWS_BUCKET_NAME.s3.$AWS_REGION.amazonaws.com/${{ inputs.container-name }}" >> $GITHUB_OUTPUT
-        
+
         echo "✅ AWS upload complete: $FILES_UPLOADED files"
         echo ""
 
@@ -362,13 +370,13 @@ runs:
       run: |
         # CRITICAL: Unset AWS_SESSION_TOKEN if it exists
         unset AWS_SESSION_TOKEN
-        
+
         echo "=========================================="
         echo "🔄 Purging CDN Cache"
         echo "=========================================="
         echo "Container path: /${{ inputs.container-name }}/*"
         echo ""
-        
+
         # Purge Azure Front Door
         echo "☁️  Purging Azure Front Door..."
         if [ -n "${{ inputs.azure-frontdoor-client-id }}" ] && \
@@ -409,7 +417,7 @@ runs:
           [ -z "${{ inputs.azure-frontdoor-tenant-id }}" ] && echo "   Missing: azure-frontdoor-tenant-id"
         fi
         echo ""
-        
+
         # Purge AWS CloudFront
         echo "🚀 Purging AWS CloudFront..."
         if [ -n "${{ inputs.aws-cloudfront-distribution-id }}" ] && [ -n "$AWS_ACCESS_KEY_ID" ] && [ -n "$AWS_SECRET_ACCESS_KEY" ]; then
@@ -432,6 +440,40 @@ runs:
           [ -z "$AWS_SECRET_ACCESS_KEY" ] && echo "   Missing: aws-cloudfront-invalidation-secret-key"
         fi
         echo ""
+
+        # Purge Cloudflare
+        echo "🌐 Purging Cloudflare..."
+        if [ -n "${{ inputs.cloudflare-zone-id }}" ] && [ -n "${{ inputs.cloudflare-api-token }}" ]; then
+          RESPONSE=$(curl -s -X POST "https://api.cloudflare.com/client/v4/zones/${{ inputs.cloudflare-zone-id }}/purge_cache" \
+            -H "Authorization: Bearer ${{ inputs.cloudflare-api-token }}" \
+            -H "Content-Type: application/json" \
+            --data '{"prefixes":["/${{ inputs.container-name }}/"]}')
+          
+          if echo "$RESPONSE" | grep -q '"success":true'; then
+            echo "✅ Cloudflare cache purge initiated for /${{ inputs.container-name }}/"
+          else
+            echo "⚠️  Cloudflare prefix purge failed (requires Enterprise plan)"
+            echo "   Attempting purge with wildcard path..."
+            
+            # Fallback: try purging with files array using wildcard-style URL
+            # Note: For non-Enterprise, you may need to purge specific file URLs or use purge_everything
+            RESPONSE=$(curl -s -X POST "https://api.cloudflare.com/client/v4/zones/${{ inputs.cloudflare-zone-id }}/purge_cache" \
+              -H "Authorization: Bearer ${{ inputs.cloudflare-api-token }}" \
+              -H "Content-Type: application/json" \
+              --data '{"purge_everything":true}')
+            
+            if echo "$RESPONSE" | grep -q '"success":true'; then
+              echo "✅ Cloudflare full cache purge completed"
+            else
+              echo "❌ Cloudflare cache purge failed: $RESPONSE"
+            fi
+          fi
+        else
+          echo "⚠️  Cloudflare credentials not provided, skipping"
+          [ -z "${{ inputs.cloudflare-zone-id }}" ] && echo "   Missing: cloudflare-zone-id"
+          [ -z "${{ inputs.cloudflare-api-token }}" ] && echo "   Missing: cloudflare-api-token"
+        fi
+        echo ""
         echo "✅ CDN cache purge complete"
         echo ""
 
@@ -444,7 +486,7 @@ runs:
         echo "📦 Container: ${{ inputs.container-name }}"
         echo "📁 Source: ${{ inputs.source-directory }}"
         echo ""
-        
+
         # Determine which step outputs to use
         if [ "${{ inputs.clean-container }}" == "true" ] && [ "${{ inputs.dry-run }}" != "true" ]; then
           AZURE_FILES="${{ steps.azure-upload-clean.outputs.files-uploaded }}"
@@ -457,7 +499,7 @@ runs:
           AWS_FILES="${{ steps.aws-upload.outputs.files-uploaded }}"
           AWS_URL="${{ steps.aws-upload.outputs.cdn-url }}"
         fi
-        
+
         echo "☁️  Azure Blob Storage:"
         echo "   Files uploaded: $AZURE_FILES"
         echo "   URL: $AZURE_URL"
@@ -466,7 +508,8 @@ runs:
         echo "   Files uploaded: $AWS_FILES"
         echo "   URL: $AWS_URL"
         echo ""
-        echo "🌐 CDN URLs (via Traffic Manager):"
+        echo "🌐 CDN URLs:"
         echo "   https://cdn.flipdish.com/${{ inputs.container-name }}/"
         echo "   https://azure.cdn.flipdish.com/${{ inputs.container-name }}/"
         echo "   https://aws.cdn.flipdish.com/${{ inputs.container-name }}/"
+        echo "   https://cloudflare.cdn.flipdish.com/${{ inputs.container-name }}/"
