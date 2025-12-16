@@ -89,7 +89,7 @@ Purge CDN cache after upload to ensure new files are immediately available:
     aws-cloudfront-invalidation-key-id: ${{ secrets.CDN_CLOUDFRONT_INVALIDATION_KEY_ID }}
     aws-cloudfront-invalidation-secret-key: ${{ secrets.CDN_CLOUDFRONT_INVALIDATION_SECRET_KEY }}
     # Cloudflare purge
-    cloudflare-zone-id: ${{ secrets.CDN_CLOUDFLARE_ZONE_ID }}
+    cloudflare-zone-id: ${{ vars.CDN_CLOUDFLARE_ZONE_ID }}
     cloudflare-api-token: ${{ secrets.CDN_CLOUDFLARE_API_TOKEN }}
 ```
 
