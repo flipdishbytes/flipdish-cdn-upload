@@ -259,14 +259,3 @@ stages:
 | `awsCloudfront*` | No | - | AWS CloudFront credentials for cache invalidation |
 | `cloudflareZoneId` | No | - | Cloudflare Zone ID for cache purge |
 | `cloudflareApiToken` | No | - | Cloudflare API Token with cache purge permissions |
-
-# CDN URLs
-
-After upload, files are available at:
-
-| CDN | URL Pattern |
-|-----|-------------|
-| Primary (load balanced) | `https://cdn.flipdish.com/{container-name}/` |
-| Azure Direct | `https://azure.cdn.flipdish.com/{container-name}/` |
-| AWS Direct | `https://aws.cdn.flipdish.com/{container-name}/` |
-| Cloudflare Direct | `https://cloudflare.cdn.flipdish.com/{container-name}/` |
