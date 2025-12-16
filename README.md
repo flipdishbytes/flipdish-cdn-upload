@@ -41,8 +41,8 @@ jobs:
           container-name: "your-app-name"
           source-directory: "./dist/assets"
           azure-connection-string: ${{ secrets.CDN_AZURE_CONNECTION_STRING }}
-          aws-access-key-id: ${{ secrets.CDN_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.CDN_AWS_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ secrets.CDN_YOUR_APP_NAME_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.CDN_YOUR_APP_NAME_AWS_SECRET_ACCESS_KEY }}
 ```
 
 #### With Container Cleaning
@@ -74,8 +74,8 @@ Purge CDN cache after upload to ensure new files are immediately available:
     purge-cdn: "true"
     # Upload credentials
     azure-connection-string: ${{ secrets.CDN_AZURE_CONNECTION_STRING }}
-    aws-access-key-id: ${{ secrets.CDN_AWS_ACCESS_KEY_ID }}
-    aws-secret-access-key: ${{ secrets.CDN_AWS_SECRET_ACCESS_KEY }}
+    aws-access-key-id: ${{ secrets.CDN_YOUR_APP_NAME_AWS_ACCESS_KEY_ID }}
+    aws-secret-access-key: ${{ secrets.CDN_YOUR_APP_NAME_AWS_SECRET_ACCESS_KEY }}
     # Azure Front Door purge
     azure-frontdoor-client-id: ${{ vars.CDN_FRONTDOOR_PURGE_CLIENT_ID }}
     azure-frontdoor-client-secret: ${{ secrets.CDN_FRONTDOOR_PURGE_CLIENT_SECRET }}
@@ -105,8 +105,8 @@ Test the upload without actually uploading files:
     source-directory: "./dist/assets"
     dry-run: "true"
     azure-connection-string: ${{ secrets.CDN_AZURE_CONNECTION_STRING }}
-    aws-access-key-id: ${{ secrets.CDN_AWS_ACCESS_KEY_ID }}
-    aws-secret-access-key: ${{ secrets.CDN_AWS_SECRET_ACCESS_KEY }}
+    aws-access-key-id: ${{ secrets.CDN_YOUR_APP_NAME_AWS_ACCESS_KEY_ID }}
+    aws-secret-access-key: ${{ secrets.CDN_YOUR_APP_NAME_AWS_SECRET_ACCESS_KEY }}
 ```
 
 ### Inputs
@@ -184,8 +184,8 @@ stages:
               containerName: "your-app-name"
               sourceDirectory: "$(Build.SourcesDirectory)/dist/assets"
               azureConnectionString: $(CDN_AZURE_CONNECTION_STRING)
-              awsAccessKeyId: $(CDN_AWS_ACCESS_KEY_ID)
-              awsSecretAccessKey: $(CDN_AWS_SECRET_ACCESS_KEY)
+              aws-access-key-id: $(CDN_YOUR_APP_NAME_AWS_ACCESS_KEY_ID)
+              aws-secret-access-key: $(CDN_YOUR_APP_NAME_AWS_SECRET_ACCESS_KEY)
 ```
 
 #### With Container Cleaning
@@ -197,8 +197,8 @@ stages:
     sourceDirectory: "$(Build.SourcesDirectory)/dist/assets"
     cleanContainer: true
     azureConnectionString: $(CDN_AZURE_CONNECTION_STRING)
-    awsAccessKeyId: $(CDN_AWS_ACCESS_KEY_ID)
-    awsSecretAccessKey: $(CDN_AWS_SECRET_ACCESS_KEY)
+    aws-access-key-id: $(CDN_YOUR_APP_NAME_AWS_ACCESS_KEY_ID)
+    aws-secret-access-key: $(CDN_YOUR_APP_NAME_AWS_SECRET_ACCESS_KEY)
 ```
 
 #### With CDN Cache Purge
@@ -211,8 +211,8 @@ stages:
     purgeCdn: true
     # Upload credentials
     azureConnectionString: $(CDN_AZURE_CONNECTION_STRING)
-    awsAccessKeyId: $(CDN_AWS_ACCESS_KEY_ID)
-    awsSecretAccessKey: $(CDN_AWS_SECRET_ACCESS_KEY)
+    aws-access-key-id: $(CDN_YOUR_APP_NAME_AWS_ACCESS_KEY_ID)
+    aws-secret-access-key: $(CDN_YOUR_APP_NAME_AWS_SECRET_ACCESS_KEY)
     # Azure Front Door purge
     azureFrontdoorClientId: $(CDN_FRONTDOOR_PURGE_CLIENT_ID)
     azureFrontdoorClientSecret: $(CDN_FRONTDOOR_PURGE_CLIENT_SECRET)
@@ -239,8 +239,8 @@ stages:
     sourceDirectory: "$(Build.SourcesDirectory)/dist/assets"
     dryRun: true
     azureConnectionString: $(CDN_AZURE_CONNECTION_STRING)
-    awsAccessKeyId: $(CDN_AWS_ACCESS_KEY_ID)
-    awsSecretAccessKey: $(CDN_AWS_SECRET_ACCESS_KEY)
+    aws-access-key-id: $(CDN_YOUR_APP_NAME_AWS_ACCESS_KEY_ID)
+    aws-secret-access-key: $(CDN_YOUR_APP_NAME_AWS_SECRET_ACCESS_KEY)
 ```
 
 ### Parameters
