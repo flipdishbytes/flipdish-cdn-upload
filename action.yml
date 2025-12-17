@@ -34,34 +34,6 @@ inputs:
     description: "Purge CDN cache for the uploaded container path after upload"
     required: false
     default: "false"
-  azure-frontdoor-client-id:
-    description: "Azure service principal client ID for Front Door purge (required if purge-cdn is true)"
-    required: false
-    default: ""
-  azure-frontdoor-client-secret:
-    description: "Azure service principal client secret for Front Door purge (required if purge-cdn is true)"
-    required: false
-    default: ""
-  azure-frontdoor-tenant-id:
-    description: "Azure tenant ID for Front Door purge (required if purge-cdn is true)"
-    required: false
-    default: ""
-  azure-frontdoor-subscription-id:
-    description: "Azure subscription ID for Front Door purge (required if purge-cdn is true)"
-    required: false
-    default: ""
-  azure-frontdoor-profile-name:
-    description: "Azure Front Door profile name (required if purge-cdn is true)"
-    required: false
-    default: ""
-  azure-frontdoor-endpoint-name:
-    description: "Azure Front Door endpoint name (required if purge-cdn is true)"
-    required: false
-    default: ""
-  azure-resource-group:
-    description: "Azure resource group containing Front Door (required if purge-cdn is true)"
-    required: false
-    default: ""
   aws-cloudfront-distribution-id:
     description: "AWS CloudFront distribution ID (required if purge-cdn is true)"
     required: false
@@ -379,47 +351,6 @@ runs:
         echo "🔄 Purging CDN Cache"
         echo "=========================================="
         echo "Container path: /${{ inputs.container-name }}/*"
-        echo ""
-
-        # Purge Azure Front Door
-        echo "☁️  Purging Azure Front Door..."
-        if [ -n "${{ inputs.azure-frontdoor-client-id }}" ] && \
-           [ -n "${{ inputs.azure-frontdoor-client-secret }}" ] && \
-           [ -n "${{ inputs.azure-frontdoor-tenant-id }}" ] && \
-           [ -n "${{ inputs.azure-frontdoor-profile-name }}" ] && \
-           [ -n "${{ inputs.azure-frontdoor-endpoint-name }}" ]; then
-          
-          # Login with service principal
-          az login --service-principal \
-            --username "${{ inputs.azure-frontdoor-client-id }}" \
-            --password "${{ inputs.azure-frontdoor-client-secret }}" \
-            --tenant "${{ inputs.azure-frontdoor-tenant-id }}" \
-            --output none
-          
-          # Set subscription if provided
-          if [ -n "${{ inputs.azure-frontdoor-subscription-id }}" ]; then
-            az account set --subscription "${{ inputs.azure-frontdoor-subscription-id }}" --output none
-          fi
-          
-          # Purge Front Door endpoint
-          az afd endpoint purge \
-            --resource-group "${{ inputs.azure-resource-group }}" \
-            --profile-name "${{ inputs.azure-frontdoor-profile-name }}" \
-            --endpoint-name "${{ inputs.azure-frontdoor-endpoint-name }}" \
-            --content-paths "/${{ inputs.container-name }}/*" \
-            --no-wait true \
-            --output none || echo "⚠️  Azure Front Door purge failed"
-          
-          echo "✅ Azure Front Door purge initiated"
-          
-          # Logout to avoid affecting other steps
-          az logout --output none 2>/dev/null || true
-        else
-          echo "⚠️  Azure Front Door credentials not configured, skipping"
-          [ -z "${{ inputs.azure-frontdoor-client-id }}" ] && echo "   Missing: azure-frontdoor-client-id"
-          [ -z "${{ inputs.azure-frontdoor-client-secret }}" ] && echo "   Missing: azure-frontdoor-client-secret"
-          [ -z "${{ inputs.azure-frontdoor-tenant-id }}" ] && echo "   Missing: azure-frontdoor-tenant-id"
-        fi
         echo ""
 
         # Purge AWS CloudFront

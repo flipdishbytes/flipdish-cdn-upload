@@ -11,7 +11,7 @@ To use this CDN upload action, add it to your pipeline workflow YAML file.
 1. Validates source directory exists and counts files to upload
 2. Uploads files to Azure Blob Storage container using Azure CLI
 3. Uploads files to AWS S3 bucket using AWS CLI
-4. Optionally purges CDN cache (Azure Front Door, AWS CloudFront, Cloudflare)
+4. Optionally purges CDN cache (AWS CloudFront, Cloudflare)
 
 ### How to use?
 
@@ -76,14 +76,6 @@ Purge CDN cache after upload to ensure new files are immediately available:
     azure-connection-string: ${{ secrets.CDN_AZURE_CONNECTION_STRING }}
     aws-access-key-id: ${{ secrets.CDN_YOUR_APP_NAME_AWS_ACCESS_KEY_ID }}
     aws-secret-access-key: ${{ secrets.CDN_YOUR_APP_NAME_AWS_SECRET_ACCESS_KEY }}
-    # Azure Front Door purge
-    azure-frontdoor-client-id: ${{ vars.CDN_FRONTDOOR_PURGE_CLIENT_ID }}
-    azure-frontdoor-client-secret: ${{ secrets.CDN_FRONTDOOR_PURGE_CLIENT_SECRET }}
-    azure-frontdoor-tenant-id: ${{ vars.CDN_FRONTDOOR_PURGE_TENANT_ID }}
-    azure-frontdoor-subscription-id: ${{ vars.ARM_SUBSCRIPTION_ID }}
-    azure-frontdoor-profile-name: ${{ vars.CDN_FRONTDOOR_PROFILE_NAME }}
-    azure-frontdoor-endpoint-name: ${{ vars.CDN_FRONTDOOR_ENDPOINT_NAME }}
-    azure-resource-group: ${{ vars.CDN_FRONTDOOR_RESOURCE_GROUP }}
     # AWS CloudFront purge
     aws-cloudfront-distribution-id: ${{ vars.CDN_CLOUDFRONT_DISTRIBUTION_ID }}
     aws-cloudfront-invalidation-key-id: ${{ secrets.CDN_CLOUDFRONT_INVALIDATION_KEY_ID }}
@@ -121,7 +113,6 @@ Test the upload without actually uploading files:
 | `dry-run` | No | `false` | Perform a dry run without actually uploading |
 | `clean-container` | No | `false` | Delete orphaned files in container after uploading |
 | `purge-cdn` | No | `false` | Purge CDN cache after upload |
-| `azure-frontdoor-*` | No | - | Azure Front Door credentials for cache purge |
 | `aws-cloudfront-*` | No | - | AWS CloudFront credentials for cache invalidation |
 | `cloudflare-zone-id` | No | - | Cloudflare Zone ID for cache purge |
 | `cloudflare-api-token` | No | - | Cloudflare API Token with cache purge permissions |
@@ -144,7 +135,7 @@ To use this CDN upload template, add it to your pipeline YAML file.
 1. Validates source directory exists and counts files to upload
 2. Uploads files to Azure Blob Storage container using Azure CLI
 3. Uploads files to AWS S3 bucket using AWS CLI
-4. Optionally purges CDN cache (Azure Front Door, AWS CloudFront, Cloudflare)
+4. Optionally purges CDN cache (AWS CloudFront, Cloudflare)
 
 ### How to use?
 
@@ -213,14 +204,6 @@ stages:
     azureConnectionString: $(CDN_AZURE_CONNECTION_STRING)
     aws-access-key-id: $(CDN_YOUR_APP_NAME_AWS_ACCESS_KEY_ID)
     aws-secret-access-key: $(CDN_YOUR_APP_NAME_AWS_SECRET_ACCESS_KEY)
-    # Azure Front Door purge
-    azureFrontdoorClientId: $(CDN_FRONTDOOR_PURGE_CLIENT_ID)
-    azureFrontdoorClientSecret: $(CDN_FRONTDOOR_PURGE_CLIENT_SECRET)
-    azureFrontdoorTenantId: $(CDN_FRONTDOOR_PURGE_TENANT_ID)
-    azureFrontdoorSubscriptionId: $(ARM_SUBSCRIPTION_ID)
-    azureFrontdoorProfileName: $(CDN_FRONTDOOR_PROFILE_NAME)
-    azureFrontdoorEndpointName: $(CDN_FRONTDOOR_ENDPOINT_NAME)
-    azureResourceGroup: $(CDN_FRONTDOOR_RESOURCE_GROUP)
     # AWS CloudFront purge
     awsCloudfrontDistributionId: $(CDN_CLOUDFRONT_DISTRIBUTION_ID)
     awsCloudfrontInvalidationKeyId: $(CDN_CLOUDFRONT_INVALIDATION_KEY_ID)
@@ -255,7 +238,6 @@ stages:
 | `dryRun` | No | `false` | Perform a dry run without actually uploading |
 | `cleanContainer` | No | `false` | Delete orphaned files in container after uploading |
 | `purgeCdn` | No | `false` | Purge CDN cache after upload |
-| `azureFrontdoor*` | No | - | Azure Front Door credentials for cache purge |
 | `awsCloudfront*` | No | - | AWS CloudFront credentials for cache invalidation |
 | `cloudflareZoneId` | No | - | Cloudflare Zone ID for cache purge |
 | `cloudflareApiToken` | No | - | Cloudflare API Token with cache purge permissions |
