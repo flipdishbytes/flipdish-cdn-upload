@@ -58,6 +58,10 @@ inputs:
     description: "Cloudflare CDN hostname for prefix purge (e.g., cdn.flipdish.com)"
     required: false
     default: "cdn.flipdish.com"
+  cloudflare-custom-domain:
+    description: "Optional custom domain to also purge from Cloudflare cache (e.g., myapp.example.com)"
+    required: false
+    default: ""
 
 outputs:
   azure-files-uploaded:
@@ -380,6 +384,10 @@ runs:
         echo "🌐 Purging Cloudflare..."
         if [ -n "${{ inputs.cloudflare-zone-id }}" ] && [ -n "${{ inputs.cloudflare-api-token }}" ]; then
           CDN_HOSTNAME="${{ inputs.cloudflare-cdn-hostname }}"
+          CUSTOM_DOMAIN="${{ inputs.cloudflare-custom-domain }}"
+          
+          # Purge main CDN hostname
+          echo "   Purging ${CDN_HOSTNAME}/${{ inputs.container-name }}/"
           RESPONSE=$(curl -s -X POST "https://api.cloudflare.com/client/v4/zones/${{ inputs.cloudflare-zone-id }}/purge_cache" \
             -H "Authorization: Bearer ${{ inputs.cloudflare-api-token }}" \
             -H "Content-Type: application/json" \
@@ -402,6 +410,23 @@ runs:
               echo "✅ Cloudflare full cache purge completed"
             else
               echo "❌ Cloudflare cache purge failed: $RESPONSE"
+            fi
+          fi
+          
+          # Purge custom domain if provided (separate request - purge everything under the domain)
+          if [ -n "$CUSTOM_DOMAIN" ]; then
+            echo ""
+            echo "   Purging entire custom domain: ${CUSTOM_DOMAIN}/*"
+            RESPONSE=$(curl -s -X POST "https://api.cloudflare.com/client/v4/zones/${{ inputs.cloudflare-zone-id }}/purge_cache" \
+              -H "Authorization: Bearer ${{ inputs.cloudflare-api-token }}" \
+              -H "Content-Type: application/json" \
+              --data "{\"prefixes\":[\"${CUSTOM_DOMAIN}\"]}")
+            
+            if echo "$RESPONSE" | grep -q '"success":\s*true'; then
+              echo "✅ Cloudflare cache purge initiated for entire ${CUSTOM_DOMAIN}"
+            else
+              echo "⚠️  Cloudflare prefix purge failed for custom domain (requires Enterprise plan)"
+              echo "   Response: $RESPONSE"
             fi
           fi
         else
