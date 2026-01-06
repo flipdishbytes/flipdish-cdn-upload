@@ -2,7 +2,7 @@
 
 This repository provides a GitHub Action and Azure DevOps Template for uploading files to Flipdish's redundant CDN infrastructure. It uploads files to both Azure Blob Storage and AWS S3, with optional CDN cache purging for Azure Front Door, AWS CloudFront, and Cloudflare.
 
-# GitHub Action: CDN Upload `flipdishbytes/flipdish-cdn-upload@v1.1`
+# GitHub Action: CDN Upload `flipdishbytes/flipdish-cdn-upload@v1.3`
 
 To use this CDN upload action, add it to your pipeline workflow YAML file.
 
@@ -36,7 +36,7 @@ jobs:
         run: npm run build
 
       - name: Upload to CDN
-        uses: flipdishbytes/flipdish-cdn-upload@v1.1
+        uses: flipdishbytes/flipdish-cdn-upload@v1.3
         with:
           container-name: "your-app-name"
           source-directory: "./dist/assets"
@@ -51,7 +51,7 @@ Delete orphaned files (files in container but not in source) after uploading:
 
 ```yaml
 - name: Upload to CDN
-  uses: flipdishbytes/flipdish-cdn-upload@v1.1
+  uses: flipdishbytes/flipdish-cdn-upload@v1.3
   with:
     container-name: "your-app-name"
     source-directory: "./dist/assets"
@@ -67,7 +67,7 @@ Purge CDN cache after upload to ensure new files are immediately available:
 
 ```yaml
 - name: Upload to CDN
-  uses: flipdishbytes/flipdish-cdn-upload@v1.1
+  uses: flipdishbytes/flipdish-cdn-upload@v1.3
   with:
     container-name: "your-app-name"
     source-directory: "./dist/assets"
@@ -95,7 +95,7 @@ When a custom domain is provided, two separate cache purge requests are made:
 
 ```yaml
 - name: Upload to CDN
-  uses: flipdishbytes/flipdish-cdn-upload@v1.1
+  uses: flipdishbytes/flipdish-cdn-upload@v1.3
   with:
     container-name: "your-app-name"
     source-directory: "./dist/assets"
@@ -117,7 +117,7 @@ Test the upload without actually uploading files:
 
 ```yaml
 - name: Upload to CDN (Dry Run)
-  uses: flipdishbytes/flipdish-cdn-upload@v1.1
+  uses: flipdishbytes/flipdish-cdn-upload@v1.3
   with:
     container-name: "your-app-name"
     source-directory: "./dist/assets"
