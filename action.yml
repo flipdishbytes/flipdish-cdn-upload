@@ -360,6 +360,8 @@ runs:
         # Purge AWS CloudFront
         echo "🚀 Purging AWS CloudFront..."
         if [ -n "${{ inputs.aws-cloudfront-distribution-id }}" ] && [ -n "$AWS_ACCESS_KEY_ID" ] && [ -n "$AWS_SECRET_ACCESS_KEY" ]; then
+          # Invalidate container path (covers both CDN path and custom domain due to URI rewriting)
+          echo "   Invalidating /${{ inputs.container-name }}/*"
           INVALIDATION_ID=$(aws cloudfront create-invalidation \
             --distribution-id "${{ inputs.aws-cloudfront-distribution-id }}" \
             --paths "/${{ inputs.container-name }}/*" \
