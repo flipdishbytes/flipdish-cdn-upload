@@ -133,6 +133,8 @@ runs:
         echo "=========================================="
         echo "Container: ${{ inputs.container-name }}"
 
+        set -o pipefail
+
         # Upload files first (overwrite existing files)
         echo "📤 Uploading files to container (overwriting existing)..."
         az storage blob upload-batch \
@@ -142,6 +144,16 @@ runs:
           --overwrite true \
           --output json \
           | tee azure-upload-result.json
+
+        if [ $? -ne 0 ]; then
+          echo "❌ Failed to upload to container '${{ inputs.container-name }}'."
+          echo ""
+          echo "   If the container does not exist yet, you must create it first:"
+          echo "   1. Add the container to configuration.ts in the flipdish-redundant-cdn repo"
+          echo "   2. Deploy it to create the container in Azure and AWS"
+          echo "   Repo: https://github.com/flipdishbytes/flipdish-redundant-cdn"
+          exit 1
+        fi
 
         # Count uploaded files
         FILES_UPLOADED=$(find "${{ inputs.source-directory }}" -type f | wc -l)
@@ -211,6 +223,7 @@ runs:
         fi
 
         # Upload files using Azure CLI with connection string
+        set -o pipefail
         az storage blob upload-batch \
           --connection-string "$AZURE_STORAGE_CONNECTION_STRING" \
           --destination "${{ inputs.container-name }}" \
@@ -219,6 +232,16 @@ runs:
           --output json \
           $DRY_RUN_FLAG \
           | tee azure-upload-result.json
+
+        if [ $? -ne 0 ]; then
+          echo "❌ Failed to upload to container '${{ inputs.container-name }}'."
+          echo ""
+          echo "   If the container does not exist yet, you must create it first:"
+          echo "   1. Add the container to configuration.ts in the flipdish-redundant-cdn repo"
+          echo "   2. Deploy it to create the container in Azure and AWS"
+          echo "   Repo: https://github.com/flipdishbytes/flipdish-redundant-cdn"
+          exit 1
+        fi
 
         # Count uploaded files
         if [ "${{ inputs.dry-run }}" != "true" ]; then
